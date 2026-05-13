@@ -49,22 +49,27 @@ fi
 # =============================================================================
 create_user() {
     local user=$1 comment=$2 groups=$3 shell=$4 system=$5
-    if [[ $system == "yes" ]]; then
-    useradd -r -s /usr/sbin/nologin -c "$comment" "$user"
-	else
-    # If group with same name already exists, use it
-    if getent group "$user" >/dev/null; then
-        useradd -m -g "$user" -s "$shell" -c "$comment" "$user"
-    else
-        useradd -m -U -s "$shell" -c "$comment" "$user"
-    fi
 
-    echo "$user:$DEFAULT_PASSWORD" | chpasswd
-    passwd --expire "$user"
-	fi
+    if ! id "$user" &>/dev/null; then
+        info "Creating user: $user"
+
+        if [[ $system == "yes" ]]; then
+            useradd -r -s /usr/sbin/nologin -c "$comment" "$user"
+        else
+            # If group with same name already exists, use it
+            if getent group "$user" >/dev/null; then
+                useradd -m -g "$user" -s "$shell" -c "$comment" "$user"
+            else
+                useradd -m -U -s "$shell" -c "$comment" "$user"
+            fi
+
+            echo "$user:$DEFAULT_PASSWORD" | chpasswd
+            passwd --expire "$user"
+        fi
     else
         warn "User $user already exists, skipping."
     fi
+
     [[ -n $groups ]] && usermod -aG "$groups" "$user" || true
 }
 
