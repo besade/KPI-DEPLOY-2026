@@ -1,0 +1,43 @@
+[Unit]
+Description=MyWebApp — Simple Inventory Service
+Documentation=https://github.com/besade/KPI-DEPLOY-2026/blob/main/Lab1/README.md
+After=network.target mariadb.service
+Requires=mywebapp.socket
+
+[Service]
+Type=simple
+User=app
+Group=app
+WorkingDirectory=/opt/mywebapp
+
+# Read DB credentials from a protected env file
+EnvironmentFile=/etc/mywebapp/env
+
+# Run migration before starting the server
+ExecStartPre=/opt/mywebapp/mywebapp \
+    --migrate \
+    --db-host ${MYWEBAPP_DB_HOST} \
+    --db-port ${MYWEBAPP_DB_PORT} \
+    --db-name ${MYWEBAPP_DB_NAME} \
+    --db-user ${MYWEBAPP_DB_USER} \
+    --db-password ${MYWEBAPP_DB_PASSWORD}
+
+# Start the server; socket is inherited from mywebapp.socket via LISTEN_FDS
+ExecStart=/opt/mywebapp/mywebapp \
+    --db-host ${MYWEBAPP_DB_HOST} \
+    --db-port ${MYWEBAPP_DB_PORT} \
+    --db-name ${MYWEBAPP_DB_NAME} \
+    --db-user ${MYWEBAPP_DB_USER} \
+    --db-password ${MYWEBAPP_DB_PASSWORD}
+
+Restart=on-failure
+RestartSec=5
+
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=/var/log/mywebapp
+
+[Install]
+WantedBy=multi-user.target

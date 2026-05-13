@@ -1,0 +1,11 @@
+[Unit]
+Description=MyWebApp Socket (Simple Inventory)
+PartOf=mywebapp.service
+
+[Socket]
+# Bind only on loopback — nginx proxies from outside
+ListenStream=127.0.0.1:3000
+Accept=no
+
+[Install]
+WantedBy=sockets.target
