@@ -132,6 +132,8 @@ dotnet publish "$SRC_DIR/Lab1/src/MyWebApp/Lab1.csproj" \
 
 chown -R app:app "$APP_DIR"
 chmod 750 "$APP_DIR"
+mkdir -p /var/log/mywebapp
+chown app:app /var/log/mywebapp
 
 # =============================================================================
 # 5. Configuration (env file)
